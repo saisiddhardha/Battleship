@@ -8,11 +8,27 @@
     </encoder>
   </appender>
   
+  <appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${server.docroot:-.}/logs/battleship.log</file>
+    <encoder>
+      <pattern>%d %5p %t %c - %m%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <maxIndex>10</maxIndex>
+      <FileNamePattern>${server.docroot:-.}/logs/battleship.log.%i</FileNamePattern>
+    </rollingPolicy>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <MaxFileSize>10MB</MaxFileSize>
+    </triggeringPolicy>
+  </appender>
+  
+  
   <logger name="org.apache" level="ERROR"/>
   <logger name="org.springframework" level="ERROR"/>
   <logger name="org.hibernate" level="ERROR"/>
+  <logger name="com.company" level="DEBUG"/>
   
   <root level="ERROR">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="rollingFile" />
   </root>
 </configuration>

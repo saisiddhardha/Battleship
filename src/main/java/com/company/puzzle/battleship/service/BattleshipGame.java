@@ -2,9 +2,12 @@ package com.company.puzzle.battleship.service;
 
 import java.util.Scanner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.company.puzzle.battleship.initiator.BattleshipInitiator;
 import com.company.puzzle.battleship.pojo.GameState;
 import com.company.puzzle.battleship.pojo.Player;
 import com.company.puzzle.battleship.pojo.SeaCoordinate;
@@ -18,6 +21,8 @@ import com.company.puzzle.battleship.repositories.ShipRepository;
 
 @Service
 public class BattleshipGame implements Game{
+	
+	private static final Logger log = LoggerFactory.getLogger(BattleshipGame.class);
 
 	@Autowired
 	private ShipRepository shipRepository;
@@ -44,6 +49,7 @@ public class BattleshipGame implements Game{
 	 */
 	@Override
 	public void beginGame(){
+		log.info("Intialization completed!! starting the game");
 		
 	while(gameState.getShipsBlasted()<gameState.getEnemyShipsCount()){
 		System.out.println("---------------------------------------------------");
@@ -51,6 +57,7 @@ public class BattleshipGame implements Game{
 		getInput();
 		
 		if(blast(inputLength, inputWidth)){
+			log.debug("blast successfull at coordinates length:"+inputLength +" width:"+inputWidth);
 			changesInSea(inputLength, inputWidth, '*');
 			System.out.println("Hit successful!!!");
 			System.out.println();
@@ -62,6 +69,7 @@ public class BattleshipGame implements Game{
 			seaCoordinateRepository.save(new SeaCoordinate(inputLength, inputWidth, "Hit successful", 1, "yes"));
 			
 		}else{
+			log.debug("failed hit at coordinates length:"+inputLength +" width:"+inputWidth);
 			changesInSea(inputLength, inputWidth, '#');
 			System.out.println("Failed to hit, focus on hint");
 			gameState.printSea();
@@ -72,13 +80,14 @@ public class BattleshipGame implements Game{
 		}
 		
 	}
+	log.debug("all ships blasted");
 	if(gameState.getEnemyShipsCount() == gameState.getShipsBlasted()){
 		System.out.println("All ships fired, in "+ gameState.getTotalAttempts() +" attempts");
 		System.out.println("Please enter player name ->");
 		playerName = in.next();
 		playerRepository.save(new Player(gameState.getTotalAttempts(), playerName));
 	}
-	
+	log.debug("Ranking of the players");
 	System.out.println("------------RANKINGS----------");
 	System.out.println("Player -> Attempts");
 	for(Player player : playerRepository.findOrderByAttempts()){
@@ -126,6 +135,7 @@ public class BattleshipGame implements Game{
 	 */
 	@Override
 	public boolean blast(int length, int width) {
+		log.debug("checking if blast is sucess at length:"+length+" width:"+width);
 		int[][] ships = gameState.getShips();
 		boolean success = false;
 		for (int x = 0; x < gameState.getEnemyShipsCount(); x++) {
@@ -177,6 +187,7 @@ public class BattleshipGame implements Game{
 	}
 
 	private void showHint(int length, int width) {
+		log.debug("providing  hint for coordinates length:"+length+" width:"+width);
 		System.out.println("hint, number of ships in that column::" + hintWidth(width));
 		System.out.println("hint, number of ships in that row::" + hintLenght(length));
 	}

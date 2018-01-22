@@ -3,6 +3,8 @@ package com.company.puzzle.battleship.service;
 import java.util.List;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,8 @@ import com.company.puzzle.battleship.repositories.ShipRepository;
 @Service
 public class PopulateGameState {
 
+	private static final Logger log = LoggerFactory.getLogger(PopulateGameState.class);
+	
 	@Autowired
 	private GameState gameState;
 
@@ -34,7 +38,7 @@ public class PopulateGameState {
 	 * RECAP of the game played earlier, like bombings and hints done earlier.
 	 */
 	public void populateResumeGameState() {
-
+		log.debug("checking if old game state is available in db");
 		if(shipRepository.findAll().size() != gameState.getEnemyShipsCount()){
 			populateNewGameState();
 		}
@@ -42,6 +46,7 @@ public class PopulateGameState {
 		resumeInitilizeShips();
 		resumeInitializeSea();
 
+		log.debug("RECAP of old game");
 		System.out.println("RECAP!!!");
 		for (SeaCoordinate seaCoordinate : seaCoordinateRepository.findAll()) {
 			System.out.println("X Coordinate ::" + seaCoordinate.getxCoordinate() + " X Coordinate ::"
@@ -72,14 +77,14 @@ public class PopulateGameState {
 	 * initialize ships and deletes old data from database.
 	 */
 	private void newInitilizeShips() {
-
+		log.debug("deleting old state from db");
 		shipRepository.deleteAll();
 
 		Random randomGenrator = new Random();
 
 		int intializedShipCount = 0;
 		int[][] ships = new int[gameState.getEnemyShipsCount()][2];
-
+		log.info("generating new ships locations using random number generator");
 		do {
 			int randomLength = randomGenrator.nextInt(gameState.getSeaDimensions());
 			int randomWidth = randomGenrator.nextInt(gameState.getSeaDimensions());
@@ -122,9 +127,10 @@ public class PopulateGameState {
 	}
 
 	private void newInitializeSea() {
-
+		log.debug("deleting old sea coordinates from DB");
 		seaCoordinateRepository.deleteAll();
-
+		
+		log.debug("Initializing fresh sea state");
 		int sizeLength = gameState.getSeaDimensions();
 		int sizeWidth = gameState.getSeaDimensions();
 		char[][] sea = new char[sizeLength][sizeWidth];
@@ -142,6 +148,7 @@ public class PopulateGameState {
 	 */
 	private void resumeInitializeSea() {
 		// TODO
+		log.debug("Resuming  the sea state by refering seaCordinate db");
 		int shipsBlasted = 0;
 		int sizeLength = gameState.getSeaDimensions();
 		int sizeWidth = gameState.getSeaDimensions();
@@ -152,7 +159,8 @@ public class PopulateGameState {
 			}
 		}
 		List<SeaCoordinate> seaCoordinatesList = seaCoordinateRepository.findAll();
-
+		
+		log.debug("Populating ships blasted into gamestates");
 		for (SeaCoordinate seaCoordinate : seaCoordinatesList) {
 			if (seaCoordinate.getSuccess().equals("yes")) {
 				sea[seaCoordinate.getxCoordinate()][seaCoordinate.getyCoordinate()] = '*';
@@ -171,6 +179,7 @@ public class PopulateGameState {
 	 * resumes the ship locations and loads ships locations into GameState.
 	 */
 	private void resumeInitilizeShips() {
+		log.debug("Intializing the ships from DB");
 		int count = 0;
 		int[][] ships = new int[gameState.getEnemyShipsCount()][2];
 		List<Ship> shipsList = shipRepository.findAll();
