@@ -184,7 +184,7 @@ public class PopulateGameState {
 		int[][] ships = new int[gameState.getEnemyShipsCount()][2];
 		List<Ship> shipsList = shipRepository.findAll();
 
-		if (shipsList.size() <= 3) {
+		if (shipsList.size() == gameState.getEnemyShipsCount()) {
 			for (Ship ship : shipsList) {
 				ships[count][0] = ship.getxCoordinate();
 				ships[count][1] = ship.getyCoordinate();
